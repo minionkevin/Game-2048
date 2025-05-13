@@ -2,7 +2,7 @@
 export default {
   bootstrap: () => import('./main.server.mjs').then(m => m.default),
   inlineCriticalCss: true,
-  baseHref: '/Game-2048/',
+  baseHref: 'https://minionkevin.github.io/Game-2048/',
   locale: undefined,
   routes: [
   {
@@ -33,13 +33,13 @@ export default {
 ],
   entryPointToBrowserMapping: undefined,
   assets: {
-    'index.csr.html': {size: 713, hash: 'a5fb1a82375fccd6a1d16faeee05f5169e1d27a7be400e025dfa27f168af26a9', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
-    'index.server.html': {size: 1015, hash: '26fd809cc9900abd37d942fd85b5ea52a26607c0ad8883436cffd0fa94ca0409', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
-    'game-over/index.html': {size: 3783, hash: '642c37d8412bda00c0d65a251e26fcd03302abe55ca5e3e9c3a16706a5fcfdf5', text: () => import('./assets-chunks/game-over_index_html.mjs').then(m => m.default)},
-    'sign-up/index.html': {size: 4067, hash: '63a3bb355783adf17c9ac63841ea695e7aabce1129a37c9cbcc6c2c95208ff7a', text: () => import('./assets-chunks/sign-up_index_html.mjs').then(m => m.default)},
-    'leaderboard/index.html': {size: 3345, hash: '7fb06a7bb777bf654a150c541219558520e04fd5adbcfac69e319ad19d100d18', text: () => import('./assets-chunks/leaderboard_index_html.mjs').then(m => m.default)},
-    'login/index.html': {size: 4155, hash: '49cab44390d04bb32f14afd37cf0c989b3c2d23bfe335d59d2fecd5848ddc9c6', text: () => import('./assets-chunks/login_index_html.mjs').then(m => m.default)},
-    'game-board/index.html': {size: 8759, hash: '9c4eb31fecbabd303b10859b50a2a7f2dbe538701dda00506c2a645ad08f6b83', text: () => import('./assets-chunks/game-board_index_html.mjs').then(m => m.default)},
+    'index.csr.html': {size: 742, hash: '776af657bf8405651e154ffd56dfd3a567113df54e4d45738921d1f8173c56af', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
+    'index.server.html': {size: 1044, hash: 'c0807c0dc1d13bb925f5d3729c687703da1520ef85afd0f5eb714fda3992d95b', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
+    'game-board/index.html': {size: 8913, hash: '094667275256b15b28433cb8cd7ecb0e19b3c7b56fd24e2ac75beeb726a63518', text: () => import('./assets-chunks/game-board_index_html.mjs').then(m => m.default)},
+    'sign-up/index.html': {size: 4096, hash: 'e5d3767aeb6592ec2d52c67c6e0d1aa6837bb68014b5ccd845728c9ff31ad61f', text: () => import('./assets-chunks/sign-up_index_html.mjs').then(m => m.default)},
+    'leaderboard/index.html': {size: 3375, hash: '3d0abf29ba83e8a0dbe7726bd530a9061a5f7a2f03638d97c0fb05890110de15', text: () => import('./assets-chunks/leaderboard_index_html.mjs').then(m => m.default)},
+    'game-over/index.html': {size: 3812, hash: 'b183ad35e9985b37fe63765582099b8acf32fed0bc85fe3bb214a476eeba4b00', text: () => import('./assets-chunks/game-over_index_html.mjs').then(m => m.default)},
+    'login/index.html': {size: 4184, hash: 'b927619e972e6efec00a94cd40dd8d6cc21a92680ff0cf127c1483dea24cfb53', text: () => import('./assets-chunks/login_index_html.mjs').then(m => m.default)},
     'styles-KNGQYYPU.css': {size: 86, hash: 'ip9d7WrwHVU', text: () => import('./assets-chunks/styles-KNGQYYPU_css.mjs').then(m => m.default)}
   },
 };

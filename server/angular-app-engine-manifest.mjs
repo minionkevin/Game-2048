@@ -1,6 +1,6 @@
 
 export default {
-  basePath: '/Game-2048',
+  basePath: 'https://minionkevin.github.io/Game-2048',
   supportedLocales: {
   "en-US": ""
 },

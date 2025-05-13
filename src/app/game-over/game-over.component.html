@@ -1,0 +1,11 @@
+<div class="game-over-page">
+    <div class="game-over-container">
+        <h1 class="game-over-title">Game Over</h1>
+        <p class="score-text">Highest Score: <span class="score">{{ this.scoreService.getCurrHighScore()}}</span></p>
+        <div class="action-buttons">
+            @if(!hasUserLogin){<button class="login-btn" (click)="userLogin()">Login</button>}
+            <button class="leaderboard-btn" (click)="checkLeaderboard()">Leaderboard</button>
+            <button (click)="restart()" class="restart-btn">Restart</button>
+        </div>
+    </div>
+</div>

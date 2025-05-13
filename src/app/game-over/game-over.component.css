@@ -1,0 +1,83 @@
+/* Game Over 页面容器 */
+.game-over-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f9f9f9; /* 浅灰色背景 */
+  color: #6b4226; /* 深棕色文字 */
+  text-align: center;
+}
+
+/* Game Over 页面内容容器 */
+.game-over-container {
+  background: #fff6e5; 
+  padding: 40px;
+  border-radius: 8px;  /* 保持像素风格的圆角 */
+  box-shadow: 0 0 8px rgba(242, 166, 90, 0.3); /* 像素风格阴影 */
+  width: 100%;
+  max-width: 400px;
+  border: 2px solid #f2a65a; /* 橙色边框 */
+}
+
+/* Game Over 标题 */
+.game-over-title {
+  font-size: 2.8rem; /* 调整为像素风格 */
+  font-weight: bold;
+  color: #f2a65a; /* 橙色 */
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(242, 166, 90, 0.5); /* 橙色的文本阴影 */
+}
+
+/* 分数文本 */
+.score-text {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  color: #8b5e3c; /* 深棕色 */
+}
+
+/* 分数 */
+.score {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #d94f30; /* 红砖橙 */
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px; 
+}
+
+/* 按钮样式 */
+.login-btn,
+.leaderboard-btn,
+.restart-btn {
+  background-color: #f2a65a; /* 橙色背景 */
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  width: 100%; /* 确保按钮宽度不超出卡片 */
+  box-sizing: border-box; /* 使 padding 和 border 包含在按钮的总宽度内 */
+}
+
+/* 按钮悬停效果 */
+.login-btn:hover,
+.leaderboard-btn:hover,
+.restart-btn:hover {
+  background-color: #e0783c; /* 按钮悬停时颜色变化 */
+}
+
+/* 按钮点击时效果 */
+.login-btn:active,
+.leaderboard-btn:active,
+.restart-btn:active {
+  background-color: #c56c2d; /* 按钮点击时颜色 */
+}

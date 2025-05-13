@@ -1,0 +1,65 @@
+<div class="game-page">
+    <div class="board">
+        <div class="grid-content">
+            <div *ngFor="let cell of cells" class="cell"></div>
+            <ng-container *ngFor="let block of this.boardService.blockData">
+                <app-block *ngIf="block.shouldShow" [blockCount]="block.value" [index]="block.index" [style]="{
+                    top: block.xPos,
+                    left: block.yPos
+                  }">
+                </app-block>
+            </ng-container>
+        </div>
+    </div>
+
+    @if(!userService.getUsername())
+    {
+    <div class="button-container"><button class="basic-button" (click)="handleLogin()"
+            matTooltip=" SAVE GAME ANYTIME">sign in</button>
+    </div>
+    }
+
+    <button class="toggle-btn" [class.open]="sidebarOpen" (click)="toggleSidebar()">
+        {{ sidebarOpen ? '✕' : '>' }}
+    </button>
+
+    <!-- DEBUG PANEL -->
+    <div class="sidebar" [class.open]="sidebarOpen">
+        <div class="sidebar-content">
+            <ul>
+                <button class="basic-button" (click)="showDebug()">Print Data</button>
+                <button class="basic-button" (click)="this.boardService.addRandomBlock()">Spawn Random</button>
+                <button class="basic-button" (click)="gameOver()">GameOver</button>
+                <button class="basic-button" (click)="playerSignOut()">Sign Out</button>
+                @if(this.userService.getUsername())
+                {
+                <button class="basic-button" (click)="reloadGame()">Reload</button>
+                }
+
+                <input type="number" [min]="0" [max]="15" [(ngModel)]="debugInputIndex"
+                    matTooltip="Input spawn position index" class="basic-input" matTooltipPosition="right">
+                <input type="number" [(ngModel)]="debugInputValue" matTooltip="Input spawn value" class="basic-input"
+                    matTooltipPosition="right">
+                <button class="basic-button"
+                    (click)="this.boardService.addBlockToPos(debugInputIndex,debugInputValue)">SubmitPos</button>
+            </ul>
+        </div>
+
+        <div class="user-info">
+            @if(userName != null)
+            {
+            <div>👤 {{ userName }}</div>
+            }
+            @else {
+            <div>👤 0.o</div>
+            }
+            @if(scoreService.getCurrHighScore())
+            {
+            <div>⭐ {{scoreService.getCurrHighScore()}}</div>
+            }
+            @else {
+            <div>⭐ 0</div>
+            }
+        </div>
+    </div>
+</div>

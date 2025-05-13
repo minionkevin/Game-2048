@@ -1,0 +1,23 @@
+<div class="signup-container">
+    <form (ngSubmit)="handleSignup()">
+        <h1>{{title}}</h1>
+        <div>
+            <label for="username">Username:</label>
+            <input id="username" type="text" [(ngModel)]="username" name="username" required />
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input id="password" type="password" [(ngModel)]="password" name="password" required />
+        </div>
+        <button type="submit">{{title}}</button>
+
+        @if(title === 'LOGIN')
+        {
+        <button (click)="handleLogin()">SIGNUP</button>
+        }
+
+        <div *ngIf="message" class="output-message" [ngClass]="{'success': isSuccess, 'error': !isSuccess}">
+            {{ message }}
+        </div>
+    </form>
+</div>

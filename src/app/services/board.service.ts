@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { UserService } from './user.service';
 import { ScoreService } from './score.service';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BoardService {
@@ -238,7 +239,7 @@ export class BoardService {
         const info = JSON.stringify({ data });
         const payload = { playerId, info };
 
-        return this.http.post('${environment.apiUrl}/player-state', payload).subscribe({
+        return this.http.post(`${environment.apiUrl}/player-state`, payload).subscribe({
             next: (response) => {
                 // console.log('Move response:', response);
             },

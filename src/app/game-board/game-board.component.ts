@@ -27,6 +27,8 @@ export class GameBoardComponent {
   debugInputValue: number = 2;
   userName: string | null = null;
   shoudLoad: boolean = false;
+  touchStartX = 0;
+  touchStartY = 0;
 
   ngOnInit(): void {
     this.setupEvent();
@@ -62,6 +64,29 @@ export class GameBoardComponent {
       case 'ArrowRight':
         this.boardService.moveBlocks('right');
         break;
+    }
+  }
+
+  onSwipe(direction: 'up' | 'down' | 'left' | 'right') {
+    this.boardService.moveBlocks(direction);
+  }
+
+  onTouchStart(event: TouchEvent) {
+    this.touchStartX = event.touches[0].clientX;
+    this.touchStartY = event.touches[0].clientY;
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    const endX = event.changedTouches[0].clientX;
+    const endY = event.changedTouches[0].clientY;
+
+    const dx = endX - this.touchStartX;
+    const dy = endY - this.touchStartY;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      this.onSwipe(dx > 0 ? 'right' : 'left');
+    } else {
+      this.onSwipe(dy > 0 ? 'down' : 'up');
     }
   }
 

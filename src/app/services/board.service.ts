@@ -251,7 +251,7 @@ export class BoardService {
 
     // load player board from database by playerId
     loadPlayerState(playerId: number) {
-        return this.http.get<any>(`http://two048-back-0453.onrender.com/player-state/${playerId}`).subscribe({
+        return this.http.get<any>(`${environment.apiUrl}/player-state/${playerId}`).subscribe({
             next: (response) => {
                 const info = response.info;
                 for (let i = 0; i < info.data.length; i++) {

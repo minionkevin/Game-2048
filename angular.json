@@ -24,6 +24,12 @@
                 "input": "public"
               }
             ],
+            "fileReplacements": [
+  {
+    "replace": "src/environments/environment.ts",
+    "with": "src/environments/environment.prod.ts"
+  }
+],
             "styles": ["src/styles.css"],
             "scripts": []
           },
@@ -48,7 +54,8 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "aot": true
+              "aot": true,
+              "baseHref": "/Game-2048/"
             },
             "development": {
               "optimization": false,

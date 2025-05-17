@@ -1,4 +1,4 @@
-import { Component, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, Inject, PLATFORM_ID, QueryList, viewChild, ViewChild, ViewChildren } from '@angular/core';
 import { BlockComponent } from '../block/block.component';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -8,6 +8,9 @@ import { UserService } from '../services/user.service';
 import { BoardService } from '../services/board.service';
 import { ScoreService } from '../services/score.service';
 import { isPlatformBrowser } from '@angular/common';
+import { boardLayoutInfo } from '../block-layout.Module';
+import { Int2 } from '../block-pos.Module';
+import { SingleBlockData } from '../block-type.Module';
 
 @Component({
   selector: 'app-game-board',
@@ -19,7 +22,9 @@ import { isPlatformBrowser } from '@angular/common';
 
 export class GameBoardComponent {
 
-  constructor(private router: Router, public userService: UserService, public boardService: BoardService, public scoreService: ScoreService, @Inject(PLATFORM_ID) private platformId: Object) { }
+  constructor(private router: Router, public userService: UserService, public boardService: BoardService,
+    public scoreService: ScoreService, @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef) { }
 
   cells: number[] = [];
   sidebarOpen = false;
@@ -29,14 +34,54 @@ export class GameBoardComponent {
   shoudLoad: boolean = false;
   touchStartX = 0;
   touchStartY = 0;
+  dataIsLoaded: boolean = false;
+
+  @ViewChildren('cellRefs') cellRefs!: QueryList<ElementRef<HTMLDivElement>>;
+  @ViewChild('gridContentRef') gridContentRef!: ElementRef<HTMLDivElement>;
+
+  cellSize = 0;
+  layoutInfo?: boardLayoutInfo;
 
   ngOnInit(): void {
     this.setupEvent();
     this.boardService.setBoardState(false);
-    this.boardService.initGame();
+    this.cdr.detectChanges();
 
     this.cells = new Array(this.boardService.getBoardSize()).fill(0);
   }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.updateBlockPositions();
+      this.boardService.initGame();
+    });
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.updateBlockPositions();
+  }
+
+  updateBlockPositions() {
+    this.boardService.blockData.forEach((block, i) => {
+      const cellEl = this.cellRefs.toArray()[i]?.nativeElement;
+      if (cellEl) {
+        block.xPos = cellEl.offsetTop;
+        block.yPos = cellEl.offsetLeft;
+        block.size = cellEl.offsetWidth;
+        block.shouldShow = false;
+        block.hasValue = false;
+        block.isMerge = false;
+        block.value = 0;
+        block.index = i;
+      }
+    });
+  }
+
+  onBlockMoveEnd(blockData: SingleBlockData) {
+    this.boardService.handleBlockAnimationFinish(blockData);
+  }
+
 
   setupEvent() {
     this.userService.username$.subscribe(name => {
@@ -107,6 +152,7 @@ export class GameBoardComponent {
 
   reloadGame() {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.updateBlockPositions();
     this.boardService.loadPlayerState(Number(localStorage.getItem('playerId')));
     this.shoudLoad = true;
   }

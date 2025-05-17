@@ -1,14 +1,15 @@
 <div class="touch-input" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
     <div class="game-page">
-        <div class="board">
-            <div class="grid-content">
-                <div *ngFor="let cell of cells" class="cell"></div>
-                <ng-container *ngFor="let block of this.boardService.blockData">
-                    <app-block *ngIf="block.shouldShow" [blockCount]="block.value" [index]="block.index" [style]="{
-                    top: block.xPos,
-                    left: block.yPos
-                  }">
+        <div class="board" #boardRef>
+            <div class="grid-content" #gridContentRef>
+                <div *ngFor="let cell of cells" class="cell" #cellRefs></div>
+                <ng-container *ngFor="let block of boardService.blockData">
+                    @if(block.shouldShow)
+                    {
+                    <app-block [width]=block.size [height]=block.size [xpos]=block.xPos [ypos]=block.yPos
+                        [blockData]="block" (moveEnd)="onBlockMoveEnd($event)">
                     </app-block>
+                    }
                 </ng-container>
             </div>
         </div>

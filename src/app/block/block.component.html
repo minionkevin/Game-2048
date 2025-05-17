@@ -1,4 +1,12 @@
-<div class="block"
-    [ngStyle]="{ 'top': positionStyle.top, 'left': positionStyle.left, 'background-color': getColor(blockCount) }">
-    <p class="number">{{ blockCount }}</p>
+<div class="block" [ngStyle]="{ 'background-color': getColor(blockData.value), 
+    width:width + 'px',
+    height:height + 'px',
+    top:xpos + 'px',
+    left:ypos + 'px'
+}" (transitionend)="onTransitionEnd($event)" [class.move-animation]="true">
+
+  <p class="number" [ngStyle]="{ fontSize: (width * 0.35) + 'px' }">{{blockData.value.toString()}}</p>
+  <div classs="debug-container">
+    <p class="debugIndex" [ngStyle]="{ fontSize: (width * 0.2) + 'px' }">{{blockData.index.toString()}}</p>
+  </div>
 </div>

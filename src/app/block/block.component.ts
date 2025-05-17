@@ -1,23 +1,31 @@
-import { Component, Input } from '@angular/core';
-import { NgStyle } from '@angular/common';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, input } from '@angular/core';
+import { CommonModule, NgStyle } from '@angular/common';
+import { SingleBlockData } from '../block-type.Module';
+import { BoardService } from '../services/board.service';
 
 @Component({
   selector: 'app-block',
-  imports: [NgStyle],
+  imports: [NgStyle, CommonModule],
   templateUrl: './block.component.html',
   styleUrl: './block.component.css'
 })
 export class BlockComponent {
 
-  @Input({ required: true }) blockCount !: number;
-  @Input() style!: { top: number, left: number };
-  @Input() index!: number;
+  @Input() width!: number;
+  @Input() height!: number;
+  @Input() xpos!: number;
+  @Input() ypos!: number;
 
-  get positionStyle() {
-    return {
-      top: this.style.top + 'px',
-      left: this.style.left + 'px'
-    };
+  @Output() moveEnd = new EventEmitter<SingleBlockData>();
+  @Input() blockData!: SingleBlockData;
+
+  public isMerge: boolean = false;
+  public isMove: boolean = false;
+
+  constructor() { }
+
+  onTransitionEnd(event: TransitionEvent) {
+    this.moveEnd.emit(this.blockData);
   }
 
   getColor(value: number): string {
@@ -33,7 +41,7 @@ export class BlockComponent {
       case 512: return '#edc850';
       case 1024: return '#edc53f';
       case 2048: return '#edc22e';
-      default: return '#3c3a32';
+      default: return '#eee4da';
     }
   }
 }

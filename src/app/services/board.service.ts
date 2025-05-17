@@ -2,11 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Int2 } from '../block-pos.Module';
 import { SingleBlockData } from '../block-type.Module';
-import { Subject } from 'rxjs';
+import { merge, Subject } from 'rxjs';
 import { UserService } from './user.service';
 import { ScoreService } from './score.service';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../environments/environment';
+import { SingleBlockPosData } from '../blockData-pos.Module';
 
 @Injectable({ providedIn: 'root' })
 export class BoardService {
@@ -20,52 +21,45 @@ export class BoardService {
     public row: number = 4;
     public column: number = 4;
 
+    public blockMap: { [index: number]: SingleBlockPosData } = {};
+    private blockMoveCount: number = 0;
+    private blockDataProcessCount: number = 0;
+
     getBoardSize() {
         return this.row * this.column;
     }
 
-    blockPosData: SingleBlockData[] = new Array(16).fill(null).map((_, index) => ({
+    blockData: SingleBlockData[] = new Array(16).fill(null).map((_, i) => ({
         value: 0,
-        index: -1,
-        pos2d: new Int2(-1, -1),
+        index: i,
         xPos: 0,
         yPos: 0,
+        size: 0,
         shouldShow: false,
+        hasValue: false,
         isMerge: false
     }));
 
-    blockData: SingleBlockData[] = [];
+    processData: SingleBlockData[] = new Array(16).fill(null).map((_, i) => ({
+        value: 0,
+        index: i,
+        xPos: 0,
+        yPos: 0,
+        size: 0,
+        shouldShow: false,
+        hasValue: false,
+        isMerge: false,
+        originalIndex: -1
+    }));
 
     // init board data
     initGame() {
-        for (let i = 0; i < this.blockPosData.length; i++) {
-            this.blockPosData[i] = ({
-                value: 0,
-                index: i,
-                pos2d: Int2.convertToInt2Pos(i),
-                xPos: this.getTop(i),
-                yPos: this.getLeft(i),
-                shouldShow: false,
-                isMerge: false
-            });
-        }
-
-        this.blockData = this.getInitialBlockData();
+        this.blockData.forEach(block => {
+            this.blockMap[block.index] = { posX: block.xPos, posY: block.yPos };
+        });
 
         this.addRandomBlock();
         this.addRandomBlock();
-    }
-
-    getInitialBlockData(): SingleBlockData[] {
-        return new Array(16).fill(null).map(() => ({
-            value: 0,
-            index: -1,
-            pos2d: new Int2(-1, -1),
-            xPos: 0,
-            yPos: 0,
-            shouldShow: false,
-            isMerge: false
-        }));
     }
 
     // Add block to random avaiable on the board
@@ -73,7 +67,7 @@ export class BoardService {
         const emptyIndices: number[] = [];
 
         this.blockData.forEach((block, i) => {
-            if (block.index === -1) {
+            if (!block.hasValue) {
                 emptyIndices.push(i);
             }
             if (block.value > this.scoreService.getCurrHighScore()) {
@@ -90,28 +84,24 @@ export class BoardService {
         }
 
         const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-
-        // calculate position
-        this.blockData[randomIndex] = ({
-            value: Math.random() < 0.75 ? 2 : 4,
-            index: randomIndex,
-            pos2d: Int2.convertToInt2Pos(randomIndex),
-            xPos: this.getTop(randomIndex),
-            yPos: this.getLeft(randomIndex),
-            shouldShow: true,
-            isMerge: false
-        });
+        let tempBlock = this.blockData[randomIndex];
+        //tempBlock.value = Math.random() < 0.75 ? 2 : 4;
+        tempBlock.value = 2;
+        tempBlock.shouldShow = true;
+        tempBlock.hasValue = true;
     }
 
     // take player input and move to direction
     moveBlocks(direction: 'up' | 'down' | 'left' | 'right') {
         this.blockData.forEach(block => {
             block.isMerge = false;
+            block.targetIndex = undefined;
         });
 
+        this.blockMoveCount = 0;
+        this.processData = this.blockData.map(block => ({ ...block }));
         this.moveInDirection(direction);
-        this.addRandomBlock();
-        this.savePlayerState();
+
     }
 
     // change board data and move blocks depends on direction
@@ -122,87 +112,121 @@ export class BoardService {
 
         for (let outer of outerRange) {
             for (let inner of innerRange) {
-                const x = isHorizontal ? inner : outer;
-                const y = isHorizontal ? outer : inner;
-                const currIndex = Int2.convertToIndexPosFromNum(x, y);
-                let currBlock = this.blockData[currIndex];
+                let x = isHorizontal ? inner : outer;
+                let y = isHorizontal ? outer : inner;
+                let currIndex = Int2.convertToIndexPosFromNum(x, y);
+                let currBlock = this.processData[currIndex];
 
-                if (currBlock.value === 0) continue;
+                if (!currBlock.hasValue) continue;
 
-                let currX = x;
-                let currY = y;
+                let nextX = x;
+                let nextY = y;
+                let nextIndex = Int2.convertToIndexPosFromNum(nextX, nextY);
+                let lastValidIndex = currIndex;
+                let blockValue = currBlock.value;
+
 
                 while (true) {
-                    const nextX = currX + (direction === 'left' ? -1 : direction === 'right' ? 1 : 0);
-                    const nextY = currY + (direction === 'up' ? -1 : direction === 'down' ? 1 : 0);
+                    nextX += (direction === 'left' ? -1 : direction === 'right' ? 1 : 0);
+                    nextY += (direction === 'up' ? -1 : direction === 'down' ? 1 : 0);
 
                     if (nextX < 0 || nextX >= this.row || nextY < 0 || nextY >= this.column) break;
 
-                    const nextPos = new Int2(nextX, nextY);
-                    const nextIndex = Int2.convertToIndexPosFromInt2(nextPos);
-                    const nextBlock = this.blockData[nextIndex];
+                    nextIndex = Int2.convertToIndexPosFromNum(nextX, nextY);
+                    let nextBlock = this.processData[nextIndex];
 
-                    if (nextBlock.value === 0) {
-                        this.moveBlockToBlankPos(currBlock, nextIndex);
-                        currX = nextX;
-                        currY = nextY;
-                        currBlock = this.blockData[nextIndex];
-                    } else if (
-                        nextBlock.value === currBlock.value && !nextBlock.isMerge && !currBlock.isMerge
-                    ) {
-                        this.swapBlockToBlockPos(currBlock, nextBlock);
-                        this.cleanBlockPos(nextBlock, false);
-                        currX = nextX;
-                        currY = nextY;
-                        currBlock = this.blockData[nextIndex];
-                    } else {
+                    if (!nextBlock.hasValue) {
+                        lastValidIndex = nextIndex;
+                        continue;
+                    }
+                    if (nextBlock.value === currBlock.value && !nextBlock.isMerge && !currBlock.isMerge) {
+                        console.log("merge"); lastValidIndex = nextIndex;
+                        blockValue *= 2;
+                    }
+                    else {
                         break;
                     }
                 }
+
+                if (currBlock.index === nextIndex || currBlock.index === lastValidIndex) continue;
+
+                currBlock.targetIndex = lastValidIndex;
+                this.blockData[currBlock.index].targetIndex = lastValidIndex;
+
+                this.handleBlockDataChange(currBlock, lastValidIndex, blockValue !== currBlock.value);
+            }
+        }
+
+        for (let i = 0; i < this.blockData.length; i++) {
+            const targetIndex = this.blockData[i].targetIndex;
+            if (targetIndex !== undefined) {
+                const block = this.blockData[i];
+                this.handleMoveBlock(block, targetIndex);
             }
         }
     }
 
-    // move block to empty position
-    moveBlockToBlankPos(currBlock: SingleBlockData, newIndex: number) {
-        const removeIndex = currBlock.index;
 
-        let newBlock = ({
-            value: currBlock.value,
-            index: newIndex,
-            pos2d: this.blockPosData[newIndex].pos2d,
-            xPos: this.blockPosData[newIndex].xPos,
-            yPos: this.blockPosData[newIndex].yPos,
-            isMerge: false,
+    handleBlockDataChange(currBlock: SingleBlockData, targetIndex: number, isMerge: boolean) {
+        this.blockDataProcessCount++;
+        this.processData[targetIndex] = {
+            ...currBlock,
+            value: isMerge ? currBlock.value * 2 : currBlock.value,
+            index: targetIndex,
+            xPos: this.blockMap[targetIndex].posX,
+            yPos: this.blockMap[targetIndex].posY,
             shouldShow: true,
-        });
+            isMerge: isMerge,
+            hasValue: true
+        };
 
-        this.cleanBlockPos(this.blockData[removeIndex], false);
-        this.blockData[newIndex] = newBlock;
+        this.processData[currBlock.index] = {
+            value: 0,
+            index: currBlock.index,
+            xPos: this.blockMap[currBlock.index].posX,
+            yPos: this.blockMap[currBlock.index].posY,
+            shouldShow: false,
+            hasValue: false,
+            isMerge: false,
+            size: currBlock.size
+        };
     }
 
-    // merge 2 same value blocks
-    swapBlockToBlockPos(currBlock: SingleBlockData, targetBlock: SingleBlockData) {
-        currBlock.isMerge = true;
-        currBlock.value *= 2;
-        currBlock.pos2d = targetBlock.pos2d;
-        currBlock.xPos = targetBlock.xPos;
-        currBlock.yPos = targetBlock.yPos;
+    handleMoveBlock(currBlock: SingleBlockData, targetIndex: number) {
+        currBlock.xPos = this.blockMap[targetIndex].posX;
+        currBlock.yPos = this.blockMap[targetIndex].posY;
+    }
 
-        const tempBlock = targetBlock;
-        const tempCurrIndex = currBlock.index;
-        const tempTargetIndex = targetBlock.index;
+    handleBlockAnimationFinish(currBlock: SingleBlockData) {
+        this.blockMoveCount++;
+        this.updateMovementData(currBlock);
+        this.savePlayerState();
+    }
 
-        this.blockData[targetBlock.index] = currBlock;
-        this.blockData[tempCurrIndex] = tempBlock;
-        currBlock.index = tempTargetIndex;
+    updateMovementData(changeBlock: SingleBlockData) {
+        if (changeBlock.targetIndex || changeBlock.targetIndex === 0) {
+            this.blockData[changeBlock.index] = { ...this.processData[changeBlock.index] };
+
+            this.blockData[changeBlock.targetIndex] = { ...this.processData[changeBlock.targetIndex] };
+        }
+
+        // only go to next step when all blocks animation finish
+        if (this.blockDataProcessCount === this.blockMoveCount) {
+            this.updateBoardData();
+        }
+    }
+
+    updateBoardData() {
+        this.blockData = this.processData.map(block => ({ ...block }));
+        this.blockDataProcessCount = 0;
+        this.blockMoveCount = 0;
+        this.addRandomBlock();
     }
 
     // clean up block after moving
     cleanBlockPos(targetBlock: SingleBlockData, isMerge: boolean) {
         targetBlock.value = 0,
             targetBlock.index = -1,
-            targetBlock.pos2d = new Int2(-1, -1),
             targetBlock.xPos = 0,
             targetBlock.yPos = 0,
             targetBlock.shouldShow = false,
@@ -216,11 +240,12 @@ export class BoardService {
         this.blockData[debugIndex] = ({
             value: this.isPowerOfTwo(debugValue) ? debugValue : 2,
             index: debugIndex,
-            pos2d: Int2.convertToInt2Pos(debugIndex),
             xPos: this.getTop(debugIndex),
             yPos: this.getLeft(debugIndex),
             shouldShow: true,
-            isMerge: false
+            isMerge: false,
+            hasValue: true,
+            size: 0
         });
     }
 
@@ -269,11 +294,13 @@ export class BoardService {
         return ({
             value: blockValue,
             index: blockIndex,
-            pos2d: Int2.convertToInt2Pos(blockIndex),
             xPos: this.getTop(blockIndex),
             yPos: this.getLeft(blockIndex),
             shouldShow: true,
-            isMerge: false
+            isMerge: false,
+            hasValue: blockValue != 0,
+            targetIndex: undefined,
+            size: this.blockData[0].size
         });
     }
 
@@ -283,20 +310,21 @@ export class BoardService {
         this.savePlayerState();
     }
 
-    setBlockData(data: SingleBlockData[]) {
-        this.blockData = data;
-    }
-
     isPowerOfTwo(n: number): boolean {
         return n > 0 && (n & (n - 1)) === 0;
     }
 
     getTop(index: number): number {
-        return Math.floor(index / 4) * 110 + 10;
+        const { cellSize, gap } = this.getCellSizeAndGap();
+        return Math.floor(index / 4) * (cellSize + gap);
+    }
+    getLeft(index: number): number {
+        const { cellSize, gap } = this.getCellSizeAndGap();
+        return (index % 4) * (cellSize + gap);
     }
 
-    getLeft(index: number): number {
-        return (index % 4) * 110 + 10;
+    getCellSizeAndGap(): { cellSize: number, gap: number } {
+        return { cellSize: 0, gap: 0 };
     }
 
     setBoardState(value: boolean) {
